@@ -1,0 +1,42 @@
+.search-container {
+  position: relative;
+  width: 100%;
+}
+
+/* Dropdown box */
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+
+  background: white;
+  border-radius: 8px;
+  margin-top: 2px;
+
+  max-height: 250px;
+  overflow-y: auto;
+
+  box-shadow: 0 4px 12px rgba(35, 34, 34, 0.1);
+  z-index: 10;
+}
+
+/* Each item */
+.dropdown-item {
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #2657dd81;
+}
+
+/* Text styles */
+.stock-name {
+  font-weight: 500;
+}
+
+.stock-meta {
+  font-size: 15px;
+  color: rgb(16, 16, 16);
+}
