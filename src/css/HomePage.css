@@ -1,46 +1,47 @@
 .homepage-mainDiv {
-    height: 100vh;
     width: 100%;
-    background-color: rgb(0, 38, 60);
-
-    display: flex;
-    justify-content: center;
-    /* horizontal center */
-    align-items: center;
-    /* vertical center */
-    overflow: hidden;
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #0f172a, #020617);
+    color: #e5e7eb;
 }
 
+/* Centered search */
 .search-center {
-    width: 100%;
-    transform: translateY(-100%);
-}
-
-
-
-/* AFTER selection */
-.search-top {
-    position: sticky;
-    top: 0;
-    padding: 20px 0;
-    background: white;
-    z-index: 100;
     display: flex;
     justify-content: center;
+    align-items: center;
+    height: 70vh;
+    transition: all 0.4s ease;
 }
 
-/* Stock details */
-.stock-details {
-    padding: 20px 10%;
-}
-
-.price-list {
-    margin-top: 20px;
-}
-
-.price-item {
+/* Search moves to top */
+.search-top {
     display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
+    justify-content: center;
+    align-items: flex-start;
+    padding-bottom: 50px;
+    transition: all 0.4s ease;
+}
+
+/* Card container */
+.stock-details {
+    margin: 10px;
+    padding-bottom: 20px;
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+/* Smooth animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

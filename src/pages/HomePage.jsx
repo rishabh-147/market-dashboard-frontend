@@ -2,40 +2,83 @@ import React, { useState } from "react";
 import SearchBar from "../components/SearchBar";
 import { searchSymbol, getQuote } from "../services/stockServices";
 import "../css/HomePage.css";
+import StockDetailsCard from "../components/StockDetailsCard";
 
 function HomePage() {
   const [selectedStock, setSelectedStock] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (symbol) => {
-    const response = await getQuote(symbol);
-    setSelectedStock(response.data);   // store full data
+  // 🔍 When user selects a stock
+  const handleSubmit = async (symbol, stockName) => {
+    setLoading(true);
+
+    try {
+      const response = await getQuote(symbol + "-" + stockName);
+      setSelectedStock(response.data);
+    } catch (err) {
+      console.error("Error fetching stock:", err);
+    }
+
+    setLoading(false);
   };
+
+  // 📊 Transform API → UI usable data
+  const getCardData = () => {
+    if (!selectedStock) return null;
+
+    const prices = selectedStock.priceDetails;
+
+    if (!prices || prices.length === 0) return null;
+
+    const latest = prices[0];
+    const prev = prices[1];
+
+    return {
+      symbol: selectedStock.symbol,
+      stockName: selectedStock.stockName, // later replace with company name
+      lastRefresh: selectedStock.lastRefresh,
+
+      // 📌 Latest data
+      date: latest.date,
+      open: parseFloat(latest.open),
+      close: parseFloat(latest.close),
+      high: parseFloat(latest.high),
+      low: parseFloat(latest.low),
+      // volume: parseInt(latest.volume),
+      // 📉 Previous close
+      prevClose: prev ? parseFloat(prev.close) : parseFloat(latest.close),
+
+      // 📈 Chart data (IMPORTANT FIXED)
+      history: prices
+        .slice(0, 90) // take enough data for MA
+        .reverse() // oldest → newest (chart needs this)
+        .map((item) => ({
+          date: item.date,
+          open: parseFloat(item.open),
+          high: parseFloat(item.high),
+          low: parseFloat(item.low),
+          close: parseFloat(item.close),
+          volume: parseInt(item.volume),
+        })),
+    };
+  };
+
+  const cardData = getCardData();
 
   return (
     <div className="homepage-mainDiv">
-      
-      {/* SearchBar position changes based on state */}
+      {/* 🔍 Search Bar */}
       <div className={selectedStock ? "search-top" : "search-center"}>
         <SearchBar onSearch={searchSymbol} onSubmit={handleSubmit} />
       </div>
 
-      {/* Show details only when selected */}
-      {selectedStock && (
-        <div className="stock-details">
-          <h2>{selectedStock.symbol}</h2>
-          <p>Last Refresh: {selectedStock.lastRefresh}</p>
+      {/* ⏳ Loading */}
+      {loading && <div className="loading-text">Fetching stock data...</div>}
 
-          <div className="price-list">
-            {selectedStock.priceDetails.slice(0, 10).map((item, index) => (
-              <div key={index} className="price-item">
-                <span>{item.date}</span>
-                <span>Open: {item.open}</span>
-                <span>Close: {item.close}</span>
-                <span>High: {item.high}</span>
-                <span>Low: {item.low}</span>
-              </div>
-            ))}
-          </div>
+      {/* 📊 Stock Details */}
+      {cardData && !loading && (
+        <div className="stock-details">
+          <StockDetailsCard {...cardData} loading={loading} />
         </div>
       )}
     </div>

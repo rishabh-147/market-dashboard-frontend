@@ -1,56 +1,74 @@
 import React, { useState } from "react";
-import { styled, alpha } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
 import InputBase from "@mui/material/InputBase";
 import SearchIcon from "@mui/icons-material/Search";
 import Box from "@mui/material/Box";
 import "../css/SearchBar.css";
 
-// Container to center the search bar
+// 🔹 Container (centers search bar)
 const SearchContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   justifyContent: "center",
+  width: "100%",
   marginTop: theme.spacing(6),
 }));
 
-// Search wrapper
+// 🔹 Glass-style search bar (Edge-like)
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
-  borderRadius: "999px", // pill shape
-  backgroundColor: alpha(theme.palette.grey[100], 0.9),
-  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-  width: "60%", // leaves ~20% on each side
+  borderRadius: "50px",
+
+  background: "rgba(255, 255, 255, 0.08)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+
+  border: "1px solid rgba(255, 255, 255, 0.1)",
+
+  width: "55%",
+  height: "52px",
+
+  display: "flex",
+  alignItems: "center",
+
   transition: "all 0.3s ease",
 
   "&:hover": {
-    boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+    background: "rgba(255, 255, 255, 0.12)",
+    boxShadow: "0 0 20px rgba(59, 130, 246, 0.2)",
   },
 
   "&:focus-within": {
-    backgroundColor: "#fff",
-    boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+    background: "rgba(255, 255, 255, 0.15)",
+    boxShadow: "0 0 30px rgba(59, 130, 246, 0.35)",
+    transform: "scale(1.02)",
   },
 }));
 
-// Icon wrapper
+// 🔹 Icon
 const SearchIconWrapper = styled("div")(({ theme }) => ({
   padding: theme.spacing(0, 2),
-  height: "100%",
   position: "absolute",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  color: theme.palette.grey[600],
+  color: "#9ca3af",
 }));
 
-// Input field
+// 🔹 Input field
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: "#333",
+  color: "#e5e7eb",
   width: "100%",
 
   "& .MuiInputBase-input": {
     padding: theme.spacing(1.5, 2, 1.5, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    fontSize: "1rem",
+    paddingLeft: `calc(1em + ${theme.spacing(5)})`,
+    fontSize: "1.05rem",
+    letterSpacing: "0.3px",
+
+    "::placeholder": {
+      color: "#9ca3af",
+      opacity: 1,
+    },
   },
 }));
 
@@ -59,15 +77,19 @@ function SearchBar({ onSearch, onSubmit }) {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const handleChange = async (e) => {
-    let value = e.target.value;
+    const value = e.target.value;
 
     if (value.length >= 3 && onSearch) {
-      let response = await onSearch(value);
+      try {
+        const response = await onSearch(value);
+        const data = response?.data?.searchResult || [];
 
-      console.log("API response:", response);
-
-      setResults(response?.data?.searchResult || []);
-      setShowDropdown(true);
+        setResults(data);
+        setShowDropdown(true);
+      } catch (err) {
+        console.error(err);
+        setShowDropdown(false);
+      }
     } else {
       setShowDropdown(false);
     }
@@ -76,32 +98,28 @@ function SearchBar({ onSearch, onSubmit }) {
   return (
     <SearchContainer>
       <Search>
+        {/* 🔍 Icon */}
         <SearchIconWrapper>
           <SearchIcon />
         </SearchIconWrapper>
 
-        {/* <StyledInputBase
-          placeholder="Search stocks (e.g. TCS, TMCV)…"
-          
-          onChange={handleChange}
-          autoFocus
-          onKeyDown={handleEnter}
-        /> */}
+        {/* 🔽 Input + Dropdown */}
         <div className="search-container">
           <StyledInputBase
-            placeholder="Search stocks (e.g. TCS, TMCV)…"
+            placeholder="Search stocks (e.g. TCS, RELIANCE)…"
             onChange={handleChange}
           />
 
-          {results.length > 0 && (
+          {showDropdown && results.length > 0 && (
             <div className="dropdown">
               {results.map((item, index) => (
                 <div
                   key={index}
                   className="dropdown-item"
                   onClick={() => {
-                    onSubmit(item.symbol);
+                    onSubmit(item.symbol, item.stockName);
                     setShowDropdown(false);
+                    setResults([]); // ✅ clears dropdown properly
                   }}
                 >
                   <div className="stock-name">{item.stockName}</div>

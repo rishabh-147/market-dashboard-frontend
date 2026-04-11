@@ -1,0 +1,110 @@
+/* 🔥 FORCE DARK CARD */
+.stock-card {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
+    border-radius: 16px !important;
+    padding: 16px;
+    width: 100%;
+}
+
+/* 📊 Chart section */
+.stock-chart-section {
+    margin-bottom: 16px;
+}
+
+/* 🔻 Bottom info */
+.stock-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* 🏷 Header */
+.stock-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+/* Stock Name */
+.stock-Name {
+    font-size: 22px;
+    font-weight: 600;
+}
+
+/* Symbol */
+.stock-symbol {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* Date */
+.stock-date {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* 💰 LTP */
+.stock-price {
+    font-size: 22px;
+    font-weight: bold;
+    text-align-last: end;
+}
+
+/* 📈 Change */
+.stock-change {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Grid */
+.stock-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Metric */
+.metric {
+    background: #1e293b;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.metric span {
+    display: block;
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.metric strong {
+    font-size: 15px;
+}
+
+/* 🟢 Positive */
+.pos {
+    color: #22c55e;
+}
+
+/* 🔴 Negative */
+.neg {
+    color: #ef4444;
+}
+
+.stock-change {
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 🔹 1D badge */
+.change-label {
+    font-size: 11px;
+    background-color: #1e293b;
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: #94a3b8;
+}

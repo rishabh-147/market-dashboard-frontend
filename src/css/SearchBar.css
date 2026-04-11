@@ -3,40 +3,79 @@
   width: 100%;
 }
 
-/* Dropdown box */
+/* 🔽 Dropdown box (dark glass style) */
 .dropdown {
   position: absolute;
-  top: 100%;
+  top: 110%;
   left: 0;
   width: 100%;
 
-  background: white;
-  border-radius: 8px;
-  margin-top: 2px;
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 
-  max-height: 250px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  margin-top: 6px;
+
+  max-height: 260px;
   overflow-y: auto;
 
-  box-shadow: 0 4px 12px rgba(35, 34, 34, 0.1);
-  z-index: 10;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  z-index: 50;
+
+  animation: dropdownFade 0.2s ease;
 }
 
-/* Each item */
+/* Smooth dropdown entry */
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 🔹 Each item */
 .dropdown-item {
-  padding: 10px 15px;
+  padding: 12px 16px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
 }
 
+/* Hover effect (Edge-like blue glow) */
 .dropdown-item:hover {
-  background-color: #2657dd81;
+  background: rgba(59, 130, 246, 0.15);
 }
 
-/* Text styles */
+/* 🧾 Stock name */
 .stock-name {
+  font-size: 16px;
   font-weight: 500;
+  color: #e5e7eb;
 }
 
+/* 📌 Meta info */
 .stock-meta {
-  font-size: 15px;
-  color: rgb(16, 16, 16);
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* 🔽 Scrollbar styling (optional but premium) */
+.dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
 }
