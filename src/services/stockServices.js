@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8080/v1/stock";
+// const BASE_URL = "http://localhost:8080/v1/stock";
+const BASE_URL = "https://market-dashboard-backend-h3i2.onrender.com/v1/stock";
 
 export const searchSymbol = (query) => {
   console.log("Searching for..." + query);
