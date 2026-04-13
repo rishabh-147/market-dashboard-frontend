@@ -10,7 +10,7 @@ import "../css/StockChart.css";
 
 const maPeriods = [7, 30, 60, 90];
 
-// ✅ MA Calculation
+// ✅ Moving Average
 const calculateMA = (data, period) => {
   return data
     .map((d, i) => {
@@ -44,15 +44,17 @@ const filterData = (data, timeframe) => {
 };
 
 function StockChart({ data }) {
-  const dataRef = useRef([]);
   const chartRef = useRef(null);
   const tooltipRef = useRef(null);
   const chartInstance = useRef(null);
   const seriesRef = useRef({});
   const resizeObserverRef = useRef(null);
+  const dataRef = useRef([]);
+
   const [timeframe, setTimeframe] = useState("1M");
   const [enabledMA, setEnabledMA] = useState([]);
 
+  // ✅ Chart Creation Effect
   useEffect(() => {
     if (!data || data.length === 0) return;
 
@@ -77,7 +79,7 @@ function StockChart({ data }) {
 
     chartInstance.current = chart;
 
-    // FULL dataset (for MA correctness)
+    // ✅ Full dataset (for MA)
     const fullFormatted = data.map((d) => ({
       time: d.date,
       open: d.open,
@@ -86,9 +88,10 @@ function StockChart({ data }) {
       close: d.close,
     }));
 
-    // Filtered dataset
+    // ✅ Filtered dataset
     const filteredRaw = filterData(data, timeframe);
     dataRef.current = filteredRaw;
+
     const formatted = filteredRaw.map((d) => ({
       time: d.date,
       open: d.open,
@@ -116,7 +119,7 @@ function StockChart({ data }) {
 
     const volumeData = filteredRaw.map((d) => ({
       time: d.date,
-      value: Number(d.volume), // 🔥 FIX
+      value: Number(d.volume) || 0,
       color:
         d.close >= d.open ? "rgba(0, 230, 118, 0.6)" : "rgba(255, 82, 82, 0.6)",
     }));
@@ -130,12 +133,15 @@ function StockChart({ data }) {
       },
     });
 
-    // 📈 MA Series
+    // 📈 MA Series (initially hidden)
     const maSeriesMap = {};
 
     maPeriods.forEach((period) => {
       const maFull = calculateMA(fullFormatted, period);
-      const maVisible = maFull.slice(-formatted.length);
+
+      // safer alignment
+      const visibleTimes = new Set(formatted.map((d) => d.time));
+      const maVisible = maFull.filter((d) => visibleTimes.has(d.time));
 
       const series = chart.addSeries(LineSeries, {
         color:
@@ -147,7 +153,7 @@ function StockChart({ data }) {
                 ? "#9c27b0"
                 : "#f44336",
         lineWidth: 2,
-        visible: enabledMA.includes(period),
+        visible: false, // 🔥 handled separately
       });
 
       series.setData(maVisible);
@@ -158,7 +164,7 @@ function StockChart({ data }) {
 
     chart.timeScale().fitContent();
 
-    // ✅ Crosshair Tooltip
+    // ✅ Tooltip
     chart.subscribeCrosshairMove((param) => {
       if (!tooltipRef.current) return;
 
@@ -173,7 +179,6 @@ function StockChart({ data }) {
         return;
       }
 
-      // ✅ Candle data (safe)
       const candleData =
         param.seriesPrices?.get?.(candleSeries) ||
         param.seriesData?.get?.(candleSeries);
@@ -183,21 +188,21 @@ function StockChart({ data }) {
         return;
       }
 
-      // 🔥 FIX: Get volume from YOUR data, not chart
       const hovered = dataRef.current.find((d) => d.date === param.time);
-
       const volume = hovered ? Number(hovered.volume) : null;
 
       const { open, high, low, close } = candleData;
 
       tooltipRef.current.innerHTML = `
-    <div><strong>${param.time}</strong></div>
-    <div>O: ${open.toFixed(2)}</div>
-    <div>H: ${high.toFixed(2)}</div>
-    <div>L: ${low.toFixed(2)}</div>
-    <div>C: ${close.toFixed(2)}</div>
-    <div>Vol: ${volume && !isNaN(volume) ? volume.toLocaleString() : "-"}</div>
-  `;
+        <div><strong>${param.time}</strong></div>
+        <div>O: ${open.toFixed(2)}</div>
+        <div>H: ${high.toFixed(2)}</div>
+        <div>L: ${low.toFixed(2)}</div>
+        <div>C: ${close.toFixed(2)}</div>
+        <div>Vol: ${
+          volume && !isNaN(volume) ? volume.toLocaleString() : "-"
+        }</div>
+      `;
 
       tooltipRef.current.style.display = "block";
       tooltipRef.current.style.left = param.point.x + 15 + "px";
@@ -212,12 +217,10 @@ function StockChart({ data }) {
 
     resizeObserverRef.current.observe(chartRef.current);
 
-    // Cleanup
     return () => {
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
       }
-
       if (chartInstance.current) {
         chartInstance.current.remove();
         chartInstance.current = null;
@@ -225,19 +228,26 @@ function StockChart({ data }) {
     };
   }, [data, timeframe]);
 
-  // Toggle MA
-  const handleToggle = (period) => {
-    const series = seriesRef.current[period];
-    if (!series) return;
+  // ✅ MA Visibility Effect (FIXED)
+  useEffect(() => {
+    if (!seriesRef.current) return;
 
-    const isEnabled = enabledMA.includes(period);
+    maPeriods.forEach((period) => {
+      const series = seriesRef.current[period];
+      if (!series) return;
 
-    series.applyOptions({
-      visible: !isEnabled,
+      series.applyOptions({
+        visible: enabledMA.includes(period),
+      });
     });
+  }, [enabledMA]);
 
+  // ✅ Toggle handler (clean)
+  const handleToggle = (period) => {
     setEnabledMA((prev) =>
-      isEnabled ? prev.filter((p) => p !== period) : [...prev, period],
+      prev.includes(period)
+        ? prev.filter((p) => p !== period)
+        : [...prev, period],
     );
   };
 
@@ -248,34 +258,37 @@ function StockChart({ data }) {
         <div className="tooltip" ref={tooltipRef} />
         <div ref={chartRef} style={{ width: "100%", height: "100%" }} />
       </div>
-      
-      {/* MA Controls */}
+
+      {/* Controls */}
       <Box className="stock-chart-controls">
+        {/* Timeframe */}
         <div className="timeframe-buttons">
-        {["5D", "1W", "1M", "3M"].map((tf) => (
-          <button
-            key={tf}
-            className={timeframe === tf ? "active" : ""}
-            onClick={() => setTimeframe(tf)}
-          >
-            {tf}
-          </button>
-        ))}
-      </div>
-      <div className="ma-ops">
-        {maPeriods.map((p) => (
-          <FormControlLabel
-            key={p}
-            control={
-              <Checkbox
-                checked={enabledMA.includes(p)}
-                onChange={() => handleToggle(p)}
-                sx={{ color: "#aaa" }}
-              />
-            }
-            label={`MA${p}`}
-          />
-        ))}
+          {["5D", "1W", "1M", "3M"].map((tf) => (
+            <button
+              key={tf}
+              className={timeframe === tf ? "active" : ""}
+              onClick={() => setTimeframe(tf)}
+            >
+              {tf}
+            </button>
+          ))}
+        </div>
+
+        {/* MA */}
+        <div className="ma-ops">
+          {maPeriods.map((p) => (
+            <FormControlLabel
+              key={p}
+              control={
+                <Checkbox
+                  checked={enabledMA.includes(p)}
+                  onChange={() => handleToggle(p)}
+                  sx={{ color: "#aaa" }}
+                />
+              }
+              label={`MA${p}`}
+            />
+          ))}
         </div>
       </Box>
     </Box>
