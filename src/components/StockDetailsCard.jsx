@@ -1,6 +1,5 @@
-import { Card, Typography, Box } from "@mui/material";
+import { Card } from "@mui/material";
 import StockChart from "./StockChart";
-import { useState } from "react";
 import "../css/StockDetailsCard.css";
 
 function StockDetailsCard({
@@ -15,7 +14,6 @@ function StockDetailsCard({
   history,
   loading,
 }) {
-  
   if (loading) return <div>Loading...</div>;
 
   const change = close - prevClose;
@@ -48,12 +46,11 @@ function StockDetailsCard({
             </div>
           </div>
         </div>
-      {/* 🔥 TOP: CHART */}
-      <div className="stock-chart-section">
-        <StockChart data={history} />
+        {/* 🔥 TOP: CHART */}
+        <div className="stock-chart-section">
+          <StockChart data={history} />
+        </div>
       </div>
-      </div>
-      
 
       {/* 🔻 BOTTOM */}
       <div className="stock-info">
