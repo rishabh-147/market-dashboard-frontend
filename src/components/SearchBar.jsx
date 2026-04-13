@@ -5,7 +5,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import Box from "@mui/material/Box";
 import "../css/SearchBar.css";
 
-// 🔹 Container (centers search bar)
+// 🔹 Container
 const SearchContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   justifyContent: "center",
@@ -13,23 +13,18 @@ const SearchContainer = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(6),
 }));
 
-// 🔹 Glass-style search bar (Edge-like)
+// 🔹 Glass-style search bar
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: "50px",
-
   background: "rgba(255, 255, 255, 0.08)",
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
-
   border: "1px solid rgba(255, 255, 255, 0.1)",
-
   width: "55%",
   height: "52px",
-
   display: "flex",
   alignItems: "center",
-
   transition: "all 0.3s ease",
 
   "&:hover": {
@@ -54,7 +49,7 @@ const SearchIconWrapper = styled("div")(({ theme }) => ({
   color: "#9ca3af",
 }));
 
-// 🔹 Input field
+// 🔹 Input
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: "#e5e7eb",
   width: "100%",
@@ -73,11 +68,17 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 function SearchBar({ onSearch, onSubmit }) {
+  const [query, setQuery] = useState(""); // ✅ FIX
   const [results, setResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const handleChange = async (e) => {
     const value = e.target.value;
+
+    // ✅ Allow only alphabets + space
+    if (!/^[a-zA-Z\s]*$/.test(value)) return;
+
+    setQuery(value);
 
     if (value.length >= 3 && onSearch) {
       try {
@@ -88,10 +89,12 @@ function SearchBar({ onSearch, onSubmit }) {
         setShowDropdown(true);
       } catch (err) {
         console.error(err);
-        setShowDropdown(false);
+        setResults([]);
+        setShowDropdown(true); // still show "No results"
       }
     } else {
-      setShowDropdown(false);
+      setResults([]);
+      setShowDropdown(true); // show "Start typing"
     }
   };
 
@@ -103,31 +106,56 @@ function SearchBar({ onSearch, onSubmit }) {
           <SearchIcon />
         </SearchIconWrapper>
 
-        {/* 🔽 Input + Dropdown */}
         <div className="search-container">
           <StyledInputBase
+            value={query} // ✅ controlled input
             placeholder="Search stocks (e.g. TCS, RELIANCE)…"
             onChange={handleChange}
+            onFocus={() => setShowDropdown(true)}
+            onBlur={() => {
+              // delay so click works
+              setTimeout(() => setShowDropdown(false), 150);
+            }}
+            onPaste={(e) => {
+              e.preventDefault();
+
+              const pastedData = e.clipboardData.getData("text");
+
+              // ✅ sanitize paste
+              const cleaned = pastedData.replace(/[^a-zA-Z\s]/g, "");
+
+              setQuery((prev) => prev + cleaned);
+            }}
           />
 
-          {showDropdown && results.length > 0 && (
+          {/* 🔽 Dropdown */}
+          {showDropdown && (
             <div className="dropdown">
-              {results.map((item, index) => (
-                <div
-                  key={index}
-                  className="dropdown-item"
-                  onClick={() => {
-                    onSubmit(item.symbol, item.stockName);
-                    setShowDropdown(false);
-                    setResults([]); // ✅ clears dropdown properly
-                  }}
-                >
-                  <div className="stock-name">{item.stockName}</div>
-                  <div className="stock-meta">
-                    {item.symbol} • {item.exchangeName}
-                  </div>
+              {query.length === 0 ? (
+                <div className="dropdown-item no-result">
+                  Start typing to search
                 </div>
-              ))}
+              ) : results.length === 0 ? (
+                <div className="dropdown-item no-result">No results found</div>
+              ) : (
+                results.map((item, index) => (
+                  <div
+                    key={index}
+                    className="dropdown-item"
+                    onMouseDown={() => {
+                      onSubmit(item.symbol, item.stockName.replace("/", ""));
+                      setShowDropdown(false);
+                      setResults([]);
+                      setQuery(item.stockName); // ✅ better UX
+                    }}
+                  >
+                    <div className="stock-name">{item.stockName}</div>
+                    <div className="stock-meta">
+                      {item.symbol} • {item.exchangeName}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           )}
         </div>
