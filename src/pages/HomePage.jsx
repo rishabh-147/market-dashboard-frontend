@@ -3,6 +3,8 @@ import SearchBar from "../components/SearchBar";
 import { searchSymbol, getQuote } from "../services/stockServices";
 import "../css/HomePage.css";
 import StockDetailsCard from "../components/StockDetailsCard";
+import CreditInfo from "../components/CreditInfo";
+import Footer from "../components/Footer";
 
 function HomePage() {
   const [selectedStock, setSelectedStock] = useState(null);
@@ -66,7 +68,10 @@ function HomePage() {
   const cardData = getCardData();
 
   return (
-    <div className="homepage-mainDiv">
+    <div className="homepage-mainDiv" style={{ position: "relative" }}>
+      {/* ⓘ Tooltip (top-right) */}
+      <CreditInfo />
+
       {/* 🔍 Search Bar */}
       <div className={selectedStock ? "search-top" : "search-center"}>
         <SearchBar onSearch={searchSymbol} onSubmit={handleSubmit} />
@@ -81,6 +86,9 @@ function HomePage() {
           <StockDetailsCard {...cardData} loading={loading} />
         </div>
       )}
+
+      {/* 🔻 Footer */}
+      <Footer />
     </div>
   );
 }
